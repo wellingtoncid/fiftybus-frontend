@@ -22,6 +22,8 @@ export default function DashboardPage() {
     )
   }
 
+  console.log("Stats recebidos:", stats)
+
   return (
     <div className="space-y-8">
       <DashboardStats stats={stats} />

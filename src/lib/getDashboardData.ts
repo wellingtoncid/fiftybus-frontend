@@ -4,11 +4,17 @@ import { Alert } from "@/components/DashboardAlerts"
 import { AgentPerformance } from "@/components/DashboardChart"
 import { BusFront, CreditCard, Users, AlertTriangle } from "lucide-react"
 
-export async function getDashboardStats(): Promise<Stat[]> {
+type DashboardData = {
+  stats: Stat[]
+  alerts: Alert[]
+  agents: AgentPerformance[]
+}
+
+export async function getDashboardData(): Promise<DashboardData> {
   const res = await api.get("/admin/dashboard")
   const data = res.data
 
-  return [
+  const stats: Stat[] = [
     {
       label: "Total de Viagens",
       value: data.tripCount,
@@ -36,35 +42,25 @@ export async function getDashboardStats(): Promise<Stat[]> {
       color: "bg-red-500",
     },
   ]
-}
 
-export async function getDashboardAlerts(): Promise<Alert[]> {
-  const res = await api.get("/admin/dashboard")
-  const data = res.data
+  const alerts: Alert[] = data.problematicChecklistsCount > 0
+    ? [
+        {
+          id: 1,
+          trip: "Viagem XPTO",
+          issue: "Pneu careca",
+          date: "2025-07-03",
+        },
+        {
+          id: 2,
+          trip: "Viagem ABC",
+          issue: "Freio com desgaste",
+          date: "2025-07-01",
+        },
+      ]
+    : []
 
-  // Aqui estamos simulando os alertas, pois o backend ainda não envia uma lista
-  const fakeAlerts: Alert[] = [
-    {
-      id: 1,
-      trip: "Viagem XPTO",
-      issue: "Pneu careca",
-      date: "2025-07-03",
-    },
-    {
-      id: 2,
-      trip: "Viagem ABC",
-      issue: "Freio com desgaste",
-      date: "2025-07-01",
-    },
-  ]
+  const agents: AgentPerformance[] = data.topAgents || []
 
-  return data.problematicChecklistsCount > 0 ? fakeAlerts : []
-}
-
-export async function getDashboardAgents(): Promise<AgentPerformance[]> {
-  const res = await api.get("/admin/dashboard")
-  const data = res.data
-
-  // Os topAgents do backend são retornados como array
-  return data.topAgents || []
+  return { stats, alerts, agents }
 }

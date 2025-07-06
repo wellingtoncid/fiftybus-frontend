@@ -1,12 +1,17 @@
+"use client"
+
 import useSWR from "swr"
-import { getDashboardStats } from "@/lib/getDashboardData"
+import { getDashboardData } from "@/lib/getDashboardData"
+import type { Stat } from "@/components/DashboardStats"
 
 export function useDashboardStats() {
-  const { data, error, isLoading } = useSWR("dashboard-stats", getDashboardStats)
+  const { data: stats = [], isLoading, error } = useSWR<Stat[]>(
+    "dashboard-stats",
+    () => getDashboardData().then(data => data.stats)
+  )
 
   return {
-    stats: data || [],
-    isLoading,
+    stats: stats,
     loading: isLoading,
     error,
   }
