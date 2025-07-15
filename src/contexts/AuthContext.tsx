@@ -1,98 +1,83 @@
-"use client"
+'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import axios from "axios"
-import Cookies from "js-cookie"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
+import Cookies from 'js-cookie';
+import { api } from '@/lib/api';
 
 interface User {
-  id: string
-  name: string
-  email: string
-  role: "admin" | "manager" | "agent" | "passenger" | "driver"
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'manager' | 'agent' | 'passenger' | 'driver';
 }
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  loading: boolean
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
 }
 
-type JwtPayload = {
-  id: string
-  name: string
-  email: string
-  role: User["role"]
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-function parseJwt(token: string): JwtPayload | null {
-  try {
-    const base64Url = token.split(".")[1]
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(c => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
-        .join("")
-    )
-    return JSON.parse(jsonPayload)
-  } catch {
-    return null
-  }
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      const userData = parseJwt(token)
-      if (userData && userData.id) {
-        setUser(userData)
-      } else {
-        logout()
-      }
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+
+    if (token && userData) {
+      setUser(JSON.parse(userData));
     }
-      setLoading(false)
-  }, [])
+
+    setLoading(false);
+  }, []);
 
   async function login(email: string, password: string) {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await axios.post("/api/login", { email, password })
-      const { token, user } = response.data
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", token)
-      Cookies.set("token", token)
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      Cookies.set('token', token);
 
-      setUser(user)
+      setUser(user);
     } catch (error) {
-      console.error("Erro ao fazer login:", error)
-      throw new Error("Erro no login")
+      console.error('Erro ao fazer login:', error);
+      throw new Error('Erro no login');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   function logout() {
-    localStorage.removeItem("token")
-    Cookies.remove("token")
-    setUser(null)
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    Cookies.remove('token');
+    if (!user) return null
+    window.location.href = "/login";  
   }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error("useAuth must be used within AuthProvider")
-  return context
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error('useAuth deve estar dentro de um AuthProvider');
+  return context;
 }

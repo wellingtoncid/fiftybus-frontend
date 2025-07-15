@@ -2,16 +2,15 @@
 
 import ThemeToggle from "@/components/ThemeToggle"
 import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
 
 export default function Navbar() {
   const { user, logout } = useAuth()
-  const router = useRouter()
 
   const handleLogout = () => {
-    logout()
-    router.push("/login")
-  }
+  logout()
+  window.location.href = "/login"
+}
 
   return (
     <header className="w-full px-4 py-3 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
@@ -30,13 +29,13 @@ export default function Navbar() {
 
         {/* Logout */}
         <button
-          onClick={handleLogout}
-          className="text-sm px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white"
-        >
-          Sair
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-sm px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white"
+            >
+            <LogOut size={16} />
+            Sair
         </button>
       </div>
     </header>
   )
 }
-  

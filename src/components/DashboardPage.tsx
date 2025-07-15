@@ -6,6 +6,7 @@ import DashboardChart from "@/components/DashboardChart"
 import { useDashboardStats } from "@/hooks/useDashboardStats"
 import { useDashboardAlerts } from "@/hooks/useDashboardAlerts"
 import { useDashboardChart } from "@/hooks/useDashboardChart"
+import { motion } from "framer-motion"
 
 export default function DashboardPage() {
   const { stats, loading: loadingStats } = useDashboardStats()
@@ -25,10 +26,16 @@ export default function DashboardPage() {
   console.log("Stats recebidos:", stats)
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      className="space-y-10"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Visão Geral</h2>
       <DashboardStats stats={stats} />
       <DashboardAlerts alerts={alerts} />
       <DashboardChart agents={agents} />
-    </div>
+    </motion.div>
   )
-}
+} 
